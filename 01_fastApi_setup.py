@@ -163,11 +163,9 @@ class Girlfriend(BaseModel):
 @app.post("/chatWithGirl")
 def chat(data: Girlfriend):
     msg = random.choice(['love','hate'])
-    print("\n")
-    print("\n")
-    print("\n")
 
-    if data.status in ['single' or 'married']:
+
+    if data.status.lower() in ['single' or 'married']:
         print(f"{data.name}, since you are {data.status}, I have a message for you...")
         print(f"I {msg} you, {data.name}")
 
