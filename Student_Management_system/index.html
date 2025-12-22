@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Management System</title>
+    <style>
+        /* --- General Reset & Fonts --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f4f8;
+            color: #333;
+            padding: 20px;
+            transition: background 0.3s;
+        }
+
+        h1, h2 { text-align: center; margin-bottom: 15px; }
+        h1 { color: #1e90ff; }
+
+        /* --- Form Section Styling --- */
+        .form-section {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 600px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .form-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+        }
+
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        input:focus { border-color: #1e90ff; outline: none; box-shadow: 0 0 5px rgba(30,144,255,0.5); }
+        button {
+            background: #1e90ff;
+            color: #fff;
+            cursor: pointer;
+            border: none;
+            font-weight: bold;
+        }
+        button:hover { background: #0f7ae5; }
+
+        /* --- Table Styling --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            animation: fadeIn 1s ease-in;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            transition: background 0.3s;
+        }
+        th { background: #1e90ff; color: #fff; }
+        tr:hover { background: rgba(30,144,255,0.1); }
+
+        /* --- Fade-in Animation --- */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 650px) {
+            .form-section { padding: 15px; }
+            input, button { font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+<h1>Student Management System</h1>
+
+<div class="form-section">
+    <h2>Add / Update Student</h2>
+    <input type="number" id="studentId" placeholder="ID (for update only)">
+    <input type="text" id="name" placeholder="Name">
+    <input type="email" id="email" placeholder="Email">
+    <input type="number" id="age" placeholder="Age">
+    <input type="text" id="course" placeholder="Course">
+    <input type="number" step="0.1" id="marks" placeholder="Marks">
+    <button onclick="addStudent()">Add Student</button>
+    <button onclick="updateStudent()">Update Student</button>
+</div>
+
+<div class="form-section">
+    <h2>Delete Student</h2>
+    <input type="number" id="deleteId" placeholder="Student ID">
+    <button onclick="deleteStudent()">Delete</button>
+</div>
+
+<div class="form-section">
+    <h2>All Students</h2>
+    <button onclick="fetchStudents()">Refresh List</button>
+    <table id="studentsTable">
+        <thead>
+            <tr>
+                <th>ID</th><th>Name</th><th>Email</th><th>Age</th><th>Course</th><th>Marks</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<script>
+const API_URL = "http://127.0.0.1:8000"; // FastAPI backend
+
+// Fade in effect for new rows
+function createRow(student) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${student.id}</td>
+                    <td>${student.name}</td>
+                    <td>${student.email}</td>
+                    <td>${student.age}</td>
+                    <td>${student.course}</td>
+                    <td>${student.marks}</td>`;
+    tr.style.opacity = 0;
+    setTimeout(() => { tr.style.opacity = 1; tr.style.transition = "opacity 0.5s"; }, 50);
+    return tr;
+}
+
+// Fetch all students
+function fetchStudents() {
+    fetch(`${API_URL}/AllStudents/`)
+        .then(res => res.json())
+        .then(result => {
+            const tbody = document.querySelector("#studentsTable tbody");
+            tbody.innerHTML = "";
+
+            // result.Data contains the array of students
+            result.Data.forEach(s => {
+                tbody.innerHTML += `<tr>
+                    <td>${s.id}</td>
+                    <td>${s.name}</td>
+                    <td>${s.email}</td>
+                    <td>${s.age}</td>
+                    <td>${s.course}</td>
+                    <td>${s.marks}</td>
+                </tr>`;
+            });
+        })
+        .catch(err => console.error(err));
+}
+
+
+
+// Update student
+function updateStudent() {
+    const id = parseInt(document.getElementById("studentId").value);
+    const student = {
+        name: document.getElementById("name").value,
+        email: document.getElementById("email").value,
+        age: parseInt(document.getElementById("age").value),
+        course: document.getElementById("course").value,
+        marks: parseFloat(document.getElementById("marks").value)
+    };
+
+    fetch(`${API_URL}/UpdateStudent/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(student)
+    })
+    .then(res => {
+        if (!res.ok) throw new Error(`Failed to update student: ${res.status}`);
+        return res.json();
+    })
+    .then(data => {
+        fetchStudents();
+        alert(`Student updated! ID: ${data.id}`);
+    })
+    .catch(err => alert(err));
+}
+
+
+// Delete student
+function deleteStudent() {
+    const id = parseInt(document.getElementById("deleteId").value);
+    fetch(`${API_URL}/DeleteStudent/${id}`, { method: "DELETE" })
+        .then(() => { fetchStudents(); alert("Student deleted!"); });
+}
+
+// Initial fetch
+fetchStudents();
+</script>
+
+</body>
+</html>
