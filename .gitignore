@@ -1,1 +1,11 @@
+# Virtual environment
 /api_fast
+
+# Environment variables
+.env
+
+# Any secret or temp files
+/Generate_secret
+
+#Avoid pushing my this project to a repo named "Fastapi learning"
+Samajik_Sanjaal/

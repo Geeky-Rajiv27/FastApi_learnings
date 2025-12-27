@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from SMS_database import Base, engine, SessionLocal
 from SMS_models import student
-from SMS_schemas import CreateStudent
+from SMS_schemas import CreateStudent, StudentResponse
 from typing import List
 
 
@@ -70,7 +70,8 @@ def AllStudent(db: Session = Depends(get_db)):
 #NOTE: endpoint for creating a student and posting 
 #---------------------------------------------------------------------------------
 
-@app.post("/NewStudent/", response_model=CreateStudent)
+@app.post("/NewStudent/", response_model=StudentResponse) #NOTE : if response_model is used then 
+    # message + data cannot be shown directly since it only support returning data object
 def create_student(std: CreateStudent, db: Session = Depends(get_db)):
 
     created_std = student(

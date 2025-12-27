@@ -5,20 +5,26 @@ a) Define input data structure
 b) Validate incoming JSON
 c) Shape API responses
 '''
-from typing import Optional
 from pydantic import BaseModel
-from datetime import datetime   #NOTE: in schemas.py datatime.datetime is accepted but in 
-#model it doesn;t support 
+from typing import Optional
+from datetime import datetime
 
-#NOTE : pydantic for creating a new student
-class CreateStudent(BaseModel):     #CreateStudent is used for API responses 
-    id: Optional[int] = None      
-    name : str
-    email : str
-    age : int
-    course : str
-    marks : float
-    created_at : Optional[datetime] = None
+# -----------------------------
+# Input schema (for POST / PUT)
+# -----------------------------
+class CreateStudent(BaseModel):
+    name: str
+    email: str
+    age: int
+    course: str
+    marks: float
+
+# -----------------------------
+# Output schema (for responses)
+# -----------------------------
+class StudentResponse(CreateStudent):       #NOTE:  this class is inheriting from above class
+    id: int                         # so , both class will be used according to there use
+    created_at: Optional[datetime] = None
 
     model_config = {
         "from_attributes": True
